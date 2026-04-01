@@ -1,4 +1,4 @@
-#🌿 Nature Quest: Chronicles of the Ancient Forest
+🌿 Nature Quest: Chronicles of the Ancient Forest
 
 “When the forest forgets how to breathe, a single warden must remember for it.”
 
