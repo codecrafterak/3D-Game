@@ -1,87 +1,99 @@
-🌿 Nature Quest: Chronicles of the Ancient Forest
+# 🌿 Nature Quest: Chronicles of the Ancient Forest
 
-“When the forest forgets how to breathe, a single warden must remember for it.”
+> *“When the forest forgets how to breathe, a single warden must remember for it.”*
 
-Nature Quest is a browser-based 3D exploration game where you step into the role of Aerin, the last Forest Warden. Your mission is to recover scattered golden seeds and restore life to the dying Elderwood Tree before the Shadow Blight consumes everything.
+**Nature Quest** is a browser-based 3D exploration game where you play as **Aerin**, the last Forest Warden. Your mission is to recover scattered golden seeds and restore life to the dying Elderwood Tree before the Shadow Blight consumes the world.
 
-🎮 Features
-🌍 10 Unique Levels (Chapters)
-From peaceful meadows to cursed shadow marshes, each level has its own environment, story, and mechanics.
-🌱 Seed Collection Gameplay
-Find and collect magical seeds hidden across dynamic terrains.
-🌗 Day/Night Cycle
-Watch the world shift between sunlight and moonlight in real time.
-🌫️ Environmental Effects
-Fog, particles, lighting, and terrain variations bring each biome to life.
-👁️ Immersive First-Person Controls
-Move through the world using smooth FPS-style controls.
-🧚 Story Dialogue System
-Meet mystical characters who guide you through your journey.
-🗺️ Mini-map System
-Track nearby seeds and dangers in real time.
-⚠️ Shadow Blight Threats
-Avoid corrupted zones that signal danger nearby.
-🕹️ Controls
-Action	Key
-Move Forward	W
-Move Back	S
-Move Left	A
-Move Right	D
-Jump	SPACE
-Look Around	Mouse
-🚀 How to Run
-Download or clone the project.
-Open the HTML file in a modern browser (Chrome recommended).
-Click “Begin the Journey”.
-Click again to enter the world.
-Your cursor will lock — you are now inside the forest.
+---
 
-⚠️ If pointer lock doesn’t activate, click inside the game window.
+## 🎮 Features
 
-🧠 Tech Stack
-Three.js → 3D rendering engine
-JavaScript (ES Modules) → Game logic
-HTML5 Canvas → Rendering surface
-CSS3 → UI styling & animations
-🌲 Game Structure
-Levels Include:
-Sunlit Meadow 🌿
-Whispering Pines 🌲
-Crystal Caves 💎
-Scorched Wastes 🔥
-Frozen Tundra ❄️
-Sunken Ruins 🏛️
-Storm Peaks ⛰️
-Shadow Marsh 🌑
-Celestial Garden 🌸
-Elderwood Tree 🌳
+- 🌍 10 immersive levels (chapters), each with unique environments  
+- 🌱 Magical seed collection gameplay  
+- 🌗 Dynamic day and night cycle  
+- 🌫️ Rich environmental effects (fog, particles, lighting)  
+- 👁️ First-person exploration using pointer lock controls  
+- 🧚 Interactive dialogue system with mystical characters  
+- 🗺️ Mini-map for navigation  
+- ⚠️ Shadow Blight danger zones  
 
-Each level introduces:
+---
 
-New environment styles
-Unique particle effects
-Different challenges (Blight zones, terrain, visibility)
-✨ Gameplay Objective
-Explore each level
-Collect all golden seeds 🌟
-Avoid Shadow Blight zones ⚠️
-Progress through all 10 chapters
-Restore the Elderwood Tree
-🧩 Future Improvements
-🔊 Sound effects & background music
-🧠 Enemy AI behavior
-🎯 Missions & objectives system
-💾 Save/load progress
-📱 Mobile compatibility
-📸 Preview
+## 🕹️ Controls
 
-A glowing forest, drifting particles, ancient spirits whispering…
-This is not just a game. It’s a living world waiting to heal.
+| Action        | Key |
+|--------------|-----|
+| Move Forward | W   |
+| Move Back    | S   |
+| Move Left    | A   |
+| Move Right   | D   |
+| Jump         | SPACE |
+| Look Around  | Mouse |
 
-👤 Author
+---
 
-Created by a passionate developer exploring the intersection of storytelling + interactive 3D worlds.
+## 🚀 How to Run
 
-📜 License
+1. Download or clone this project  
+2. Open the HTML file in a modern browser (Chrome recommended)  
+3. Click **“Begin the Journey”**  
+4. Click again to enter the level  
+5. Move your mouse to look around (cursor will lock)
 
-This project is open for learning and experimentation. Modify, expand, and grow your own forest 🌱
+> If pointer lock does not activate, click inside the game window again.
+
+---
+
+## 🧠 Tech Stack
+
+- Three.js (3D rendering)
+- JavaScript (ES Modules)
+- HTML5 Canvas
+- CSS3
+
+---
+
+## 🌲 Game Levels
+
+1. 🌿 Sunlit Meadow  
+2. 🌲 Whispering Pines  
+3. 💎 Crystal Caves  
+4. 🔥 Scorched Wastes  
+5. ❄️ Frozen Tundra  
+6. 🏛️ Sunken Ruins  
+7. ⛰️ Storm Peaks  
+8. 🌑 Shadow Marsh  
+9. 🌸 Celestial Garden  
+10. 🌳 Elderwood Tree  
+
+---
+
+## ✨ Objective
+
+- Explore each level  
+- Collect all golden seeds  
+- Avoid Shadow Blight zones  
+- Progress through all chapters  
+- Restore the Elderwood Tree  
+
+---
+
+## 🧩 Future Improvements
+
+- Sound effects and background music  
+- Enemy AI system  
+- Mission and quest tracking  
+- Save/load functionality  
+- Mobile support  
+
+---
+
+## 👤 Author
+
+Developed as a creative 3D web game project combining storytelling and interactive environments.
+
+---
+
+## 📜 License
+
+Open for learning and experimentation. Feel free to modify and expand.
