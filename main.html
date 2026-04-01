@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nature Quest: Chronicles of the Ancient Forest</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Lato:wght@300;400&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#000; font-family:'Lato',sans-serif; }
+
+#game-canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; display:block; }
+
+#ui-root { position:fixed; top:0; left:0; right:0; bottom:0; z-index:10; pointer-events:none; }
+
+/* TITLE */
+#title-screen {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 60%, #0d2b0d 0%, #030f03 70%, #000 100%);
+    pointer-events:all; z-index:20;
+}
+#title-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.tp { position:absolute; border-radius:50%; background:radial-gradient(circle,#ffd700,#88ff88); opacity:0; animation:floatup linear infinite; }
+@keyframes floatup { 0%{transform:translateY(0) scale(0);opacity:0} 10%{opacity:1} 90%{opacity:.6} 100%{transform:translateY(-110vh) scale(1.5);opacity:0} }
+#title-emblem { font-size:5rem; animation:glow 3s ease-in-out infinite; position:relative; z-index:1; margin-bottom:8px; }
+@keyframes glow { 0%,100%{filter:drop-shadow(0 0 20px rgba(100,255,100,.4))} 50%{filter:drop-shadow(0 0 50px rgba(100,255,100,.8)) drop-shadow(0 0 80px rgba(255,215,0,.3))} }
+#title-main { font-family:'Cinzel',serif; font-size:clamp(2.5rem,6vw,4.5rem); font-weight:900; color:#ffd700; text-shadow:0 0 40px rgba(255,215,0,.6); letter-spacing:.08em; position:relative; z-index:1; }
+#title-sub { font-family:'Cinzel',serif; font-size:clamp(.85rem,2vw,1.1rem); color:rgba(180,255,180,.7); letter-spacing:.25em; margin:6px 0 22px; position:relative; z-index:1; }
+#title-story { max-width:520px; text-align:center; color:rgba(200,230,200,.75); font-size:.92rem; line-height:1.7; margin-bottom:30px; padding:0 20px; position:relative; z-index:1; }
+#start-btn { font-family:'Cinzel',serif; font-size:1rem; font-weight:700; letter-spacing:.2em; color:#000; background:linear-gradient(135deg,#ffd700,#ff9900); border:none; padding:14px 40px; border-radius:50px; cursor:pointer; box-shadow:0 0 30px rgba(255,215,0,.4),0 4px 20px rgba(0,0,0,.5); transition:all .3s; position:relative; z-index:1; }
+#start-btn:hover { transform:translateY(-3px) scale(1.05); box-shadow:0 0 50px rgba(255,215,0,.7); }
+#ctrl-hint { margin-top:18px; font-size:.75rem; color:rgba(180,200,180,.5); letter-spacing:.1em; position:relative; z-index:1; }
+
+/* CHAPTER */
+#chapter-screen {
+    position:absolute; inset:0;
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.93); pointer-events:all; cursor:pointer; z-index:20; text-align:center;
+}
+#cs-badge { font-size:4.5rem; margin-bottom:14px; }
+#cs-num { font-family:'Cinzel',serif; font-size:.85rem; letter-spacing:.3em; color:rgba(255,220,80,.6); text-transform:uppercase; margin-bottom:6px; }
+#cs-title { font-family:'Cinzel',serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:900; color:#ffd700; text-shadow:0 0 30px rgba(255,215,0,.5); margin-bottom:14px; }
+#cs-desc { max-width:480px; margin:0 auto 28px; color:rgba(200,230,200,.8); font-size:.95rem; line-height:1.65; padding:0 20px; }
+#cs-hint { font-family:'Cinzel',serif; font-size:.85rem; letter-spacing:.2em; color:rgba(255,220,80,.6); animation:blink 1.5s ease infinite; }
+@keyframes blink { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+/* WIN */
+#win-screen {
+    position:absolute; inset:0;
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 50%,#1a3a0a 0%,#040d04 80%);
+    pointer-events:all; z-index:20; text-align:center;
+}
+#win-emblem { font-size:5rem; margin-bottom:14px; animation:glow 2s ease infinite; }
+#win-title { font-family:'Cinzel',serif; font-size:clamp(2rem,5vw,3.5rem); font-weight:900; color:#ffd700; text-shadow:0 0 40px rgba(255,215,0,.7); margin-bottom:8px; }
+#win-sub { font-family:'Cinzel',serif; font-size:1rem; color:rgba(180,255,180,.7); letter-spacing:.2em; margin-bottom:20px; }
+#win-story { max-width:540px; margin:0 auto 28px; color:rgba(200,230,200,.8); font-size:.95rem; line-height:1.7; padding:0 20px; }
+#win-btn { font-family:'Cinzel',serif; font-size:.95rem; font-weight:700; letter-spacing:.2em; color:#000; background:linear-gradient(135deg,#ffd700,#ff9900); border:none; padding:12px 36px; border-radius:50px; cursor:pointer; box-shadow:0 0 30px rgba(255,215,0,.4); transition:all .3s; }
+#win-btn:hover { transform:scale(1.05); }
+
+/* HUD */
+#hud { position:absolute; inset:0; display:none; pointer-events:none; }
+#top-bar { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:flex-start; padding:16px 24px; }
+.hp { background:linear-gradient(135deg,rgba(0,0,0,.55),rgba(20,40,20,.45)); border:1px solid rgba(255,220,80,.25); border-radius:12px; padding:10px 18px; backdrop-filter:blur(8px); text-align:center; }
+#lv-name { font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.15em; color:rgba(255,220,80,.7); text-transform:uppercase; }
+#lv-num { font-family:'Cinzel',serif; font-size:1.35rem; font-weight:700; color:#ffd700; }
+#sc-label { font-size:.65rem; letter-spacing:.12em; color:rgba(200,255,200,.6); text-transform:uppercase; }
+#sc-val { font-family:'Cinzel',serif; font-size:1.4rem; color:#aaffaa; font-weight:700; }
+#t-icon { font-size:1.2rem; }
+#t-lbl { font-size:.75rem; color:rgba(180,220,255,.8); }
+#crosshair { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:16px; height:16px; }
+#crosshair::before,#crosshair::after { content:''; position:absolute; background:rgba(255,255,255,.7); border-radius:2px; }
+#crosshair::before { top:50%; left:0; right:0; height:1.5px; transform:translateY(-50%); }
+#crosshair::after { left:50%; top:0; bottom:0; width:1.5px; transform:translateX(-50%); }
+#cflash { position:absolute; top:42%; left:50%; transform:translateX(-50%); font-family:'Cinzel',serif; font-size:1.3rem; color:#ffd700; text-shadow:0 0 20px rgba(255,215,0,.8); opacity:0; transition:opacity .3s; white-space:nowrap; pointer-events:none; }
+#dialogue { position:absolute; bottom:56px; left:50%; transform:translateX(-50%); width:600px; max-width:90vw; background:linear-gradient(135deg,rgba(0,0,0,.88),rgba(10,30,10,.92)); border:1px solid rgba(255,220,80,.4); border-radius:16px; padding:16px 20px 16px 88px; display:none; box-shadow:0 8px 40px rgba(0,0,0,.7); pointer-events:all; cursor:pointer; }
+#dlg-portrait { position:absolute; left:-28px; top:50%; transform:translateY(-50%); width:72px; height:72px; border-radius:50%; border:3px solid rgba(255,220,80,.5); background:#1a3a1a; display:flex; align-items:center; justify-content:center; font-size:2.1rem; box-shadow:0 0 20px rgba(100,200,100,.4); }
+#dlg-speaker { font-family:'Cinzel',serif; font-size:.78rem; color:#ffd700; letter-spacing:.1em; margin-bottom:4px; }
+#dlg-text { font-size:.88rem; color:rgba(220,240,220,.9); line-height:1.55; }
+#dlg-more { font-size:.65rem; color:rgba(255,220,80,.5); margin-top:7px; letter-spacing:.15em; animation:blink 1.5s ease infinite; }
+#blight-warn { position:absolute; top:76px; left:50%; transform:translateX(-50%); display:none; background:rgba(80,0,0,.7); border:1px solid rgba(255,80,80,.4); border-radius:20px; padding:6px 16px; }
+#blight-warn span { font-size:.8rem; color:#ff8888; letter-spacing:.1em; }
+#progress { position:absolute; bottom:0; left:0; right:0; height:4px; background:rgba(0,0,0,.4); }
+#progress-fill { height:100%; background:linear-gradient(90deg,#3a9,#ffd700); width:0%; transition:width .4s; box-shadow:0 0 8px rgba(255,215,0,.6); }
+#minimap { position:absolute; bottom:18px; right:18px; width:112px; height:112px; border-radius:50%; border:1.5px solid rgba(255,220,80,.3); background:rgba(0,20,0,.5); overflow:hidden; }
+</style>
+</head>
+<body>
+
+<canvas id="game-canvas"></canvas>
+
+<div id="ui-root">
+
+  <div id="title-screen">
+    <div id="title-particles"></div>
+    <div id="title-emblem">🌿</div>
+    <div id="title-main">NATURE QUEST</div>
+    <div id="title-sub">Chronicles of the Ancient Forest</div>
+    <div id="title-story">The Elderwood Tree — heart of all life — is dying. Its golden seeds, scattered across ten cursed lands, must be found before the Shadow Blight consumes the world. You are Aerin, the last Forest Warden.</div>
+    <button id="start-btn">✦ Begin the Journey ✦</button>
+    <div id="ctrl-hint">WASD · SPACE Jump · MOUSE Look</div>
+  </div>
+
+  <div id="chapter-screen">
+    <div id="cs-badge">🌿</div>
+    <div id="cs-num">Chapter 1</div>
+    <div id="cs-title">The Sunlit Meadow</div>
+    <div id="cs-desc">The first seeds fell here, in peaceful meadows where the world first learned colour.</div>
+    <div id="cs-hint">[ Click anywhere to enter ]</div>
+  </div>
+
+  <div id="win-screen">
+    <div id="win-emblem">🌳</div>
+    <div id="win-title">The Forest Awakens</div>
+    <div id="win-sub">All Ten Seeds Returned</div>
+    <div id="win-story">With all ten golden seeds restored to the Elderwood Tree, its ancient branches burst into radiant life. The Shadow Blight dissolved, the cursed lands healed, and Aerin's name was woven into the bark of the great tree — a guardian remembered for all ages.</div>
+    <button id="win-btn">✦ Play Again ✦</button>
+  </div>
+
+  <div id="hud">
+    <div id="top-bar">
+      <div class="hp"><div id="lv-name">Chapter</div><div id="lv-num">1</div></div>
+      <div class="hp"><div id="sc-label">🌿 Seeds</div><div id="sc-val"><span id="sc">0</span>/<span id="sc-max">5</span></div></div>
+      <div class="hp"><div id="t-icon">☀️</div><div id="t-lbl">Day</div></div>
+    </div>
+    <div id="crosshair"></div>
+    <div id="cflash">✨ Collected!</div>
+    <div id="dialogue">
+      <div id="dlg-portrait">🧚</div>
+      <div id="dlg-speaker">Guide</div>
+      <div id="dlg-text">Welcome!</div>
+      <div id="dlg-more">[ Click to dismiss ]</div>
+    </div>
+    <div id="blight-warn"><span>⚠ SHADOW BLIGHT NEARBY</span></div>
+    <div id="minimap"><canvas id="mm" width="112" height="112"></canvas></div>
+    <div id="progress"><div id="progress-fill"></div></div>
+  </div>
+
+</div>
+
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+const LEVELS=[
+  {num:1,name:'The Sunlit Meadow',badge:'🌿',seeds:5,sky:[.33,.6,.75],fog:0x8eceeb,fogD:.012,ground:0x4a7c1f,trees:40,tc:0x2d7a22,wc:0x2288cc,hw:true,hb:false,pt:'fireflies',ch:{e:'🧚',n:'Lumina — Meadow Sprite'},dlg:"Warden Aerin! The Elderwood's golden seeds are scattered nearby — gather them before the Blight dims their glow!",desc:"Peaceful meadows where the world first learned colour. The meadow sprites will guide you."},
+  {num:2,name:'The Whispering Pines',badge:'🌲',seeds:6,sky:[.55,.4,.5],fog:0x5a7a5a,fogD:.018,ground:0x2a5a1a,trees:80,tc:0x0d4a0d,wc:0x1a6644,hw:true,hb:false,pt:'mist',ch:{e:'🦉',n:'Orrin — The Sage Owl'},dlg:"Hoo-hoo, young Warden. These pines remember the first dawn. Walk slowly — the seeds hide in darkness here.",desc:"Ancient pines that have stood for millennia whisper secrets of the old world. Something stirs within."},
+  {num:3,name:'The Crystal Caves',badge:'💎',seeds:7,sky:[.65,.5,.3],fog:0x3a2a5a,fogD:.025,ground:0x2a1a4a,trees:20,tc:0x441166,wc:0x6600cc,hw:true,hb:true,pt:'crystals',ch:{e:'🦇',n:'Vesper — Cave Guardian'},dlg:"You dare enter Vesper's domain? Heh… the seeds are yours to take — if you can find them in the gloom.",desc:"Below the forest, crystal caverns pulse with strange magic. The seeds glow brightest in total darkness."},
+  {num:4,name:'The Scorched Wastes',badge:'🔥',seeds:7,sky:[.07,.6,.4],fog:0x6a3a1a,fogD:.015,ground:0x5a2a0a,trees:15,tc:0x3a1a00,wc:0xff4400,hw:false,hb:true,pt:'embers',ch:{e:'🦊',n:'Ember — Fire Fox'},dlg:"Sniff sniff… the seeds smell like rain on hot stone here. Follow the fire-flowers, Warden!",desc:"The Blight burned this land to cinders. Strange fire-flowers have begun to bloom — seeds of resilience."},
+  {num:5,name:'The Frozen Tundra',badge:'❄️',seeds:8,sky:[.55,.25,.85],fog:0xaaddff,fogD:.02,ground:0xbbddee,trees:30,tc:0x336688,wc:0x88ccff,hw:true,hb:true,pt:'snow',ch:{e:'🐺',n:'Glacius — Frost Wolf'},dlg:"AWOO… Cold enough to stop a heart, but not a seed. Break the ice, Warden. Break it!",desc:"Ice has swallowed the northern reaches. The seeds are frozen still — warm them with your warden's touch."},
+  {num:6,name:'The Sunken Ruins',badge:'🏛️',seeds:8,sky:[.6,.4,.45],fog:0x2a4a3a,fogD:.022,ground:0x1a3a2a,trees:35,tc:0x1a5a3a,wc:0x004422,hw:true,hb:true,pt:'runes',ch:{e:'👁️',n:'The Watching Stone'},dlg:"…I have waited ten thousand years for a warden to return. The seeds are locked in the old seals. Prove your worth.",desc:"The ruins of the First Wardens lie half-submerged. Their seals still protect seeds from a forgotten age."},
+  {num:7,name:'The Storm Peaks',badge:'⛰️',seeds:9,sky:[.63,.3,.55],fog:0x4a4a6a,fogD:.03,ground:0x4a4a4a,trees:20,tc:0x334455,wc:0x556677,hw:false,hb:true,pt:'lightning',ch:{e:'🦅',n:'Zephyr — Storm Eagle'},dlg:"KREE! I've watched these peaks for an age. The seeds ride the wind — you must move fast, Warden!",desc:"Lightning-scarred peaks that scrape the clouds. The wind carries seeds from one summit to another."},
+  {num:8,name:'The Shadow Marsh',badge:'🌑',seeds:9,sky:[.75,.3,.25],fog:0x1a1a2a,fogD:.035,ground:0x1a2a1a,trees:50,tc:0x0a1a0a,wc:0x110022,hw:true,hb:true,pt:'shadow',ch:{e:'💀',n:'The Blight Wraith'},dlg:"You should not have come here, Warden… The seeds are mine now. Can you take them from the dark?",desc:"The heart of the Blight — a marsh of shadows where light barely survives."},
+  {num:9,name:'The Celestial Garden',badge:'🌸',seeds:10,sky:[.8,.5,.85],fog:0xddaaff,fogD:.01,ground:0x5a3a7a,trees:45,tc:0x884499,wc:0xcc88ff,hw:true,hb:false,pt:'petals',ch:{e:'👼',n:'Aelindra — Warden Spirit'},dlg:"Aerin… we have waited so long. These seeds hold the memories of every warden before you. Take them home.",desc:"Above the clouds grows a garden tended by the spirits of lost wardens. They kept the seeds safe."},
+  {num:10,name:'The Elderwood Tree',badge:'🌳',seeds:12,sky:[.33,.55,.7],fog:0x88ddaa,fogD:.008,ground:0x3a7a1a,trees:60,tc:0x1a5a0a,wc:0x22cc66,hw:true,hb:false,pt:'gold',ch:{e:'🌳',n:'The Elderwood'},dlg:"Warden… my roots reach the end of all things. Plant the last seeds within my ring and I shall live again.",desc:"You stand at the Elderwood itself — ancient, vast, and nearly dark. Plant the last seeds and restore the world."},
+];
+
+let scene,camera,renderer,controls;
+let mF=false,mB=false,mL=false,mR=false,cJ=false;
+let vel=new THREE.Vector3(),dir=new THREE.Vector3();
+let seeds=[],ptSys=[],blights=[];
+let score=0,lIdx=0,ld=LEVELS[0];
+let active=false,dlgOpen=false;
+let clock=new THREE.Clock(),wt=0;
+let sun,amb;
+const mm=document.getElementById('mm').getContext('2d');
+
+// ── INIT ──
+scene=new THREE.Scene();
+camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,800);
+camera.position.set(0,1.6,0);
+
+renderer=new THREE.WebGLRenderer({canvas:document.getElementById('game-canvas'),antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
+
+amb=new THREE.AmbientLight(0xffffff,.7); scene.add(amb);
+sun=new THREE.DirectionalLight(0xffffff,1.2);
+sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);
+sun.shadow.camera.left=sun.shadow.camera.bottom=-100;
+sun.shadow.camera.right=sun.shadow.camera.top=100;
+sun.shadow.camera.far=300;
+scene.add(sun);
+scene.add(new THREE.HemisphereLight(0x87ceeb,0x3a5f0b,.4));
+
+controls=new PointerLockControls(camera,renderer.domElement);
+
+window.addEventListener('resize',()=>{
+    camera.aspect=innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+});
+
+document.addEventListener('keydown',e=>{
+    if(!controls.isLocked)return;
+    if(e.code==='KeyW')mF=true;
+    if(e.code==='KeyS')mB=true;
+    if(e.code==='KeyA')mL=true;
+    if(e.code==='KeyD')mR=true;
+    if(e.code==='Space'&&cJ){vel.y=6;cJ=false;}
+});
+document.addEventListener('keyup',e=>{
+    if(e.code==='KeyW')mF=false;
+    if(e.code==='KeyS')mB=false;
+    if(e.code==='KeyA')mL=false;
+    if(e.code==='KeyD')mR=false;
+});
+
+// Title particles
+const pc=document.getElementById('title-particles');
+for(let i=0;i<50;i++){
+    const p=document.createElement('div');
+    p.className='tp';
+    p.style.cssText=`left:${Math.random()*100}%;bottom:-10px;width:${2+Math.random()*4}px;height:${2+Math.random()*4}px;animation-duration:${4+Math.random()*6}s;animation-delay:${Math.random()*8}s`;
+    pc.appendChild(p);
+}
+
+// ── BUTTON EVENTS ──
+document.getElementById('start-btn').addEventListener('click',e=>{
+    e.stopPropagation();
+    document.getElementById('title-screen').style.display='none';
+    showChapter(0);
+});
+document.getElementById('chapter-screen').addEventListener('click',()=>enterLevel());
+document.getElementById('win-btn').addEventListener('click',e=>{
+    e.stopPropagation();
+    document.getElementById('win-screen').style.display='none';
+    document.getElementById('title-screen').style.display='flex';
+    active=false;
+});
+document.getElementById('dialogue').addEventListener('click',e=>{
+    e.stopPropagation();
+    closeDlg();
+});
+
+// ── FLOW ──
+function showChapter(idx){
+    lIdx=idx; ld=LEVELS[idx];
+    document.getElementById('cs-badge').textContent=ld.badge;
+    document.getElementById('cs-num').textContent='Chapter '+ld.num;
+    document.getElementById('cs-title').textContent=ld.name;
+    document.getElementById('cs-desc').textContent=ld.desc;
+    document.getElementById('chapter-screen').style.display='flex';
+    document.getElementById('hud').style.display='none';
+    active=false;
+}
+
+function enterLevel(){
+    document.getElementById('chapter-screen').style.display='none';
+    document.getElementById('hud').style.display='block';
+    buildLevel();
+    active=true;
+    dlgOpen=false;
+    controls.lock();
+    setTimeout(()=>openDlg(),1400);
+}
+
+// ── WORLD ──
+function gY(x,z){
+    return Math.sin(x*.08)*Math.cos(z*.08)*3+Math.sin(x*.2+1)*Math.cos(z*.15+2);
+}
+
+function buildLevel(){
+    // Clear
+    const rem=[];
+    scene.traverse(o=>{if(o.userData.lv)rem.push(o);});
+    rem.forEach(o=>scene.remove(o));
+    seeds=[];ptSys=[];blights=[];
+    score=0;wt=0;
+    camera.position.set(0,gY(0,0)+1.6,0);
+    vel.set(0,0,0);
+
+    const [h,s,l]=ld.sky;
+    scene.background=new THREE.Color().setHSL(h,s,l);
+    scene.fog=new THREE.FogExp2(ld.fog,ld.fogD);
+
+    // Ground
+    const gGeo=new THREE.PlaneGeometry(300,300,80,80);
+    gGeo.rotateX(-Math.PI/2);
+    const gV=gGeo.attributes.position.array;
+    for(let i=0;i<gV.length;i+=3)gV[i+1]=gY(gV[i],gV[i+2]);
+    gGeo.computeVertexNormals();
+    const gm=new THREE.Mesh(gGeo,new THREE.MeshStandardMaterial({color:ld.ground,roughness:.9}));
+    gm.receiveShadow=true;gm.userData.lv=true;scene.add(gm);
+
+    // Water
+    if(ld.hw){
+        const wm=new THREE.Mesh(new THREE.PlaneGeometry(25,300),new THREE.MeshStandardMaterial({color:ld.wc,transparent:true,opacity:.65,roughness:.05,metalness:.3}));
+        wm.rotation.x=-Math.PI/2;wm.position.set(50,-.3,0);wm.userData.lv=true;scene.add(wm);
+    }
+
+    // Trees
+    for(let i=0;i<ld.trees;i++){
+        const rx=(Math.random()-.5)*180,rz=(Math.random()-.5)*180;
+        if(Math.abs(rx)<8&&Math.abs(rz)<8)continue;
+        const g=new THREE.Group();
+        const th=2+Math.random()*2;
+        const tr=new THREE.Mesh(new THREE.CylinderGeometry(.15,.3,th,7),new THREE.MeshStandardMaterial({color:0x3d1f00,roughness:.95}));
+        tr.position.y=th/2;tr.castShadow=true;g.add(tr);
+        const layers=2+Math.floor(Math.random()*2);
+        for(let l=0;l<layers;l++){
+            const lm=new THREE.Mesh(new THREE.ConeGeometry(1.3-l*.25+Math.random()*.2,2+Math.random(),7),new THREE.MeshStandardMaterial({color:new THREE.Color(ld.tc).offsetHSL(0,0,(Math.random()-.5)*.15),roughness:.8}));
+            lm.position.y=th+1.2+l*1.3;lm.castShadow=true;g.add(lm);
+        }
+        g.position.set(rx,gY(rx,rz),rz);g.userData.lv=true;scene.add(g);
+    }
+
+    // Seeds
+    const sM=new THREE.MeshStandardMaterial({color:0xffd700,emissive:0xffaa00,emissiveIntensity:.9,metalness:.3,roughness:.2});
+    for(let i=0;i<ld.seeds;i++){
+        const a=(i/ld.seeds)*Math.PI*2,r=10+Math.random()*38;
+        const x=Math.cos(a)*r+(Math.random()-.5)*12,z=Math.sin(a)*r+(Math.random()-.5)*12;
+        const s=new THREE.Mesh(new THREE.OctahedronGeometry(.28,1),sM.clone());
+        s.position.set(x,gY(x,z)+1.3,z);
+        s.userData.lv=true;s.userData.by=s.position.y;
+        scene.add(s);seeds.push(s);
+        const sl=new THREE.PointLight(0xffd700,.9,7);
+        sl.position.copy(s.position);sl.userData.lv=true;scene.add(sl);s.userData.light=sl;
+    }
+
+    // Blight
+    if(ld.hb){
+        for(let i=0;i<5;i++){
+            const a=Math.random()*Math.PI*2,r=20+Math.random()*30;
+            const bx=Math.cos(a)*r,bz=Math.sin(a)*r;
+            const bm=new THREE.Mesh(new THREE.SphereGeometry(.5,8,8),new THREE.MeshStandardMaterial({color:0x220033,emissive:0x440066,emissiveIntensity:1,transparent:true,opacity:.85}));
+            bm.position.set(bx,gY(bx,bz)+1,bz);
+            bm.userData.lv=true;bm.userData.ph=Math.random()*Math.PI*2;
+            scene.add(bm);blights.push(bm);
+            const bl=new THREE.PointLight(0x880088,.8,9);
+            bl.position.copy(bm.position);bl.userData.lv=true;scene.add(bl);bm.userData.light=bl;
+        }
+    }
+
+    // Particles
+    const pC={fireflies:0xaaffaa,mist:0xaaccaa,crystals:0x8888ff,embers:0xff6600,snow:0xccddff,runes:0x44ff88,lightning:0xaabbff,shadow:0x440066,petals:0xffaabb,gold:0xffd700};
+    const pGeo=new THREE.BufferGeometry();
+    const pPos=new Float32Array(100*3);
+    for(let i=0;i<100;i++){pPos[i*3]=(Math.random()-.5)*80;pPos[i*3+1]=1+Math.random()*6;pPos[i*3+2]=(Math.random()-.5)*80;}
+    pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+    const pts=new THREE.Points(pGeo,new THREE.PointsMaterial({color:pC[ld.pt]||0xffffff,size:.18,transparent:true,opacity:.7,depthWrite:false}));
+    pts.userData.lv=true;pts.userData.t=0;scene.add(pts);ptSys.push(pts);
+
+    updateHUD();
+}
+
+function updateHUD(){
+    document.getElementById('lv-name').textContent=ld.name;
+    document.getElementById('lv-num').textContent='Chapter '+ld.num;
+    document.getElementById('sc').textContent=score;
+    document.getElementById('sc-max').textContent=ld.seeds;
+    document.getElementById('progress-fill').style.width=(score/ld.seeds*100)+'%';
+}
+
+function flash(t){
+    const el=document.getElementById('cflash');
+    el.textContent=t;el.style.opacity='1';
+    setTimeout(()=>el.style.opacity='0',900);
+}
+
+function openDlg(){
+    dlgOpen=true;
+    document.getElementById('dlg-portrait').textContent=ld.ch.e;
+    document.getElementById('dlg-speaker').textContent=ld.ch.n;
+    document.getElementById('dlg-text').textContent=ld.dlg;
+    document.getElementById('dialogue').style.display='block';
+}
+function closeDlg(){
+    dlgOpen=false;
+    document.getElementById('dialogue').style.display='none';
+}
+
+function drawMM(){
+    const c=mm,s=1.2,px=camera.position.x,pz=camera.position.z;
+    c.clearRect(0,0,112,112);
+    c.fillStyle='rgba(0,10,0,.6)';c.beginPath();c.arc(56,56,56,0,Math.PI*2);c.fill();
+    seeds.forEach(sd=>{
+        const mx=56+(sd.position.x-px)*s,mz=56+(sd.position.z-pz)*s;
+        if(mx<2||mx>110||mz<2||mz>110)return;
+        c.fillStyle='#ffd700';c.beginPath();c.arc(mx,mz,3,0,Math.PI*2);c.fill();
+    });
+    blights.forEach(b=>{
+        const mx=56+(b.position.x-px)*s,mz=56+(b.position.z-pz)*s;
+        if(mx<2||mx>110||mz<2||mz>110)return;
+        c.fillStyle='#cc44ff';c.beginPath();c.arc(mx,mz,3,0,Math.PI*2);c.fill();
+    });
+    c.fillStyle='#00ff88';c.beginPath();c.arc(56,56,5,0,Math.PI*2);c.fill();
+    c.strokeStyle='rgba(255,220,80,.3)';c.lineWidth=1;c.beginPath();c.arc(56,56,55,0,Math.PI*2);c.stroke();
+}
+
+function advance(){
+    controls.unlock();active=false;
+    const next=lIdx+1;
+    if(next>=LEVELS.length){
+        document.getElementById('hud').style.display='none';
+        document.getElementById('win-screen').style.display='flex';
+    } else {
+        showChapter(next);
+    }
+}
+
+// ── LOOP ──
+function loop(){
+    requestAnimationFrame(loop);
+    const dt=Math.min(clock.getDelta(),.05);
+
+    if(active&&controls.isLocked){
+        wt+=dt;
+        const sa=wt*.2;
+        sun.position.set(Math.cos(sa)*120,Math.sin(sa)*120,60);
+        const [h,s]=ld.sky;
+        if(sun.position.y>0){
+            scene.background.setHSL(h,s,Math.max(.15,sun.position.y/120));
+            document.getElementById('t-icon').textContent='☀️';
+            document.getElementById('t-lbl').textContent='Day';
+            sun.intensity=1.2;
+        }else{
+            scene.background.setHSL(h,s*.4,.06);
+            document.getElementById('t-icon').textContent='🌙';
+            document.getElementById('t-lbl').textContent='Night';
+            sun.intensity=.1;
+        }
+
+        vel.x-=vel.x*10*dt;vel.z-=vel.z*10*dt;vel.y-=9.8*2.5*dt;
+        dir.z=Number(mF)-Number(mB);dir.x=Number(mR)-Number(mL);dir.normalize();
+        if(mF||mB)vel.z-=dir.z*80*dt;
+        if(mL||mR)vel.x-=dir.x*80*dt;
+        controls.moveRight(-vel.x*dt);
+        controls.moveForward(-vel.z*dt);
+        camera.position.y+=vel.y*dt;
+
+        const gy=gY(camera.position.x,camera.position.z)+1.6;
+        if(camera.position.y<gy){vel.y=0;camera.position.y=gy;cJ=true;}
+
+        for(let i=seeds.length-1;i>=0;i--){
+            const s=seeds[i];
+            s.rotation.y+=.025;s.rotation.x+=.01;
+            s.position.y=s.userData.by+Math.sin(wt*2+i)*.08;
+            if(camera.position.distanceTo(s.position)<2.2){
+                if(s.userData.light)scene.remove(s.userData.light);
+                scene.remove(s);seeds.splice(i,1);
+                score++;updateHUD();
+                flash('✨ Seed '+score+'/'+ld.seeds+' found!');
+                if(score>=ld.seeds)setTimeout(advance,900);
+            }
+        }
+
+        blights.forEach(b=>{
+            b.userData.ph+=.02;
+            b.position.y+=Math.sin(b.userData.ph)*.005;
+            if(b.userData.light)b.userData.light.position.copy(b.position);
+        });
+        let near=false;
+        blights.forEach(b=>{if(camera.position.distanceTo(b.position)<14)near=true;});
+        document.getElementById('blight-warn').style.display=near?'block':'none';
+
+        ptSys.forEach(p=>{
+            p.userData.t+=dt;
+            const t=p.userData.t,arr=p.geometry.attributes.position.array;
+            for(let i=0;i<arr.length;i+=3){
+                arr[i+1]+=Math.sin(t*1.5+i)*.003+.004;
+                arr[i]+=Math.cos(t*.7+i*.5)*.003;
+                if(arr[i+1]>8)arr[i+1]=.5;
+            }
+            p.geometry.attributes.position.needsUpdate=true;
+            p.material.opacity=.5+Math.sin(p.userData.t*2)*.2;
+        });
+
+        drawMM();
+    }
+
+    renderer.render(scene,camera);
+}
+
+loop();
+</script>
+</body>
+</html>
